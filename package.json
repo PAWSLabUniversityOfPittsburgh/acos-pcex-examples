@@ -1,0 +1,13 @@
+{
+  "name": "acos-pcex-examples",
+  "version": "0.0.1",
+  "description": "acos-pcex-examples",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Mohammad Hassany",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mhassany-pitt/acos-pcex-examples.git"
+  }
+}
