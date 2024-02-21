@@ -1,11 +1,9 @@
+const http = require('http');
 var htmlencode = require('htmlencode').htmlEncode;
 
 var ACOS_PCEX_Example = function () { };
 
-ACOS_PCEX_Example.addToHead = function (params) {
-  return '<script src="/static/acos-pcex-examples/data.js" type="text/javascript"></script>\n';
-};
-
+ACOS_PCEX_Example.addToHead = function (params) { return ''; };
 ACOS_PCEX_Example.addToBody = function (params) {
   return '<div class="pcex-example" data-id="' + htmlencode(params.name) + '"></div>';
 };
@@ -35,14 +33,23 @@ ACOS_PCEX_Example.meta = {
   'license': 'MIT',
   'version': '0.0.1',
   'url': '',
-  'teaserContent': ['demo'],
-  'contents': {
-    'demo': {
-      'title': 'demo',
-      'description': '',
-      'order': 0,
-    }
-  }
+  'teaserContent': [],
+  'contents': {}
 };
+
+http.get('http://adapt2.sis.pitt.edu/pcex-authoring/api/hub', (response) => {
+  let raw = '';
+  response.on('data', (chunk) => raw += chunk);
+  response.on('end', () => {
+    JSON.parse(raw).forEach((example, index) => {
+      ACOS_PCEX_Example.meta.contents[example.id] = {
+        'order': index,
+        'title': example.name,
+        'description': example.description || '',
+      };
+    });
+    ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
+  });
+}).on('error', (error) => console.error('Error:', error));
 
 module.exports = ACOS_PCEX_Example;
