@@ -1,4 +1,4 @@
-const http = require('http');
+const https = require('https');
 var htmlencode = require('htmlencode').htmlEncode;
 
 var ACOS_PCEX_Example = function () { };
@@ -27,22 +27,24 @@ ACOS_PCEX_Example.packageType = 'content';
 
 ACOS_PCEX_Example.meta = {
   'name': 'acos-pcex-examples',
-  'shortDescription': 'A demonstration for PCEX examples.',
+  'shortDescription': 'Examples and challenges created and shared publicly on PCEX Authoring Tool (http://adapt2.sis.pitt.edu/pcex-authoring/#/hub)',
   'description': '',
   'author': 'Mohammad Hassany',
   'license': 'MIT',
-  'version': '0.0.1',
+  'version': '0.0.2',
   'url': '',
   'teaserContent': [],
   'contents': {}
 };
 
-http.get('http://adapt2.sis.pitt.edu/pcex-authoring/api/hub', (response) => {
+// const api = 'http://adapt2.sis.pitt.edu/pcex-authoring/api/hub'
+const api = 'https://proxy.personalized-learning.org/pcex-authoring/api/hub'
+https.get(api, (response) => {
   let raw = '';
   response.on('data', (chunk) => raw += chunk);
   response.on('end', () => {
     JSON.parse(raw).forEach((example, index) => {
-      ACOS_PCEX_Example.meta.contents[example.id] = {
+      ACOS_PCEX_Example.meta.contents[`${example.id}__${example.name.replace(/ /g, '_')}`] = {
         'order': index,
         'title': example.name,
         'description': example.description || '',
