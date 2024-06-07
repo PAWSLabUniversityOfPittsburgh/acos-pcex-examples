@@ -44,7 +44,10 @@ https.get(api, (response) => {
   response.on('data', (chunk) => raw += chunk);
   response.on('end', () => {
     JSON.parse(raw).forEach((example, index) => {
-      ACOS_PCEX_Example.meta.contents[`${example.id}__${example.name.replace(/ /g, '_')}`] = {
+      let name = example.name;
+      name = name.replace(/ /g, '_');
+      name = name.replace(/\./g, '_');
+      ACOS_PCEX_Example.meta.contents[`${example.id}__${name}`] = {
         'order': index,
         'title': example.name,
         'description': example.description || '',
