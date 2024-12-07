@@ -47,7 +47,7 @@ https.get(api, (response) => {
       let name = example.name;
       name = name.replace(/ /g, '_');
       name = name.replace(/\./g, '_');
-      ACOS_PCEX_Example.meta.contents[`${example.id}__${name}`] = {
+      ACOS_PCEX_Example.meta.contents[`${name}__${example.id}`] = {
         'order': index,
         'title': example.name,
         'description': example.description || '',
