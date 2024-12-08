@@ -43,7 +43,7 @@ https.get(api, (response) => {
   let raw = '';
   response.on('data', (chunk) => raw += chunk);
   response.on('end', () => {
-    JSON.parse(raw).forEach((example, index) => {
+    JSON.parse(raw).sort((a,b)=>a.name.localeCompare(b.name)).forEach((example, index) => {
       let name = example.name;
       name = name.replace(/ /g, '_');
       name = name.replace(/\./g, '_');
