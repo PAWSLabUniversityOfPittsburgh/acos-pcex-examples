@@ -37,24 +37,31 @@ ACOS_PCEX_Example.meta = {
   'contents': {}
 };
 
-// const api = 'http://adapt2.sis.pitt.edu/pcex-authoring/api/hub'
-const api = 'https://proxy.personalized-learning.org/pcex-authoring/api/hub'
-https.get(api, (response) => {
-  let raw = '';
-  response.on('data', (chunk) => raw += chunk);
-  response.on('end', () => {
-    JSON.parse(raw).sort((a,b)=>a.name.localeCompare(b.name)).forEach((example, index) => {
-      let name = example.name;
-      name = name.replace(/ /g, '_');
-      name = name.replace(/\./g, '_');
-      ACOS_PCEX_Example.meta.contents[`${name}__${example.id}`] = {
-        'order': index,
-        'title': example.name,
-        'description': example.description || '',
-      };
+const load = () => {
+  // const api = 'http://adapt2.sis.pitt.edu/pcex-authoring/api/hub'
+  const api = 'https://proxy.personalized-learning.org/pcex-authoring/api/hub'
+  https.get(api, (response) => {
+    let raw = '';
+    response.on('data', (chunk) => raw += chunk);
+    response.on('end', () => {
+      ACOS_PCEX_Example.meta.contents = {};
+      ACOS_PCEX_Example.meta.teaserContent = [];
+      JSON.parse(raw).sort((a, b) => a.name.localeCompare(b.name)).forEach((example, index) => {
+        let name = example.name;
+        name = name.replace(/ /g, '_');
+        name = name.replace(/\./g, '_');
+        ACOS_PCEX_Example.meta.contents[`${name}__${example.id}`] = {
+          'order': index,
+          'title': example.name,
+          'description': example.description || '',
+        };
+      });
+      ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
     });
-    ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
-  });
-}).on('error', (error) => console.error('Error:', error));
+  }).on('error', (error) => console.error('Error:', error));
+}
+
+setInterval(() => load(), 5 * 60 * 1000); // reload every 5mins
+load();
 
 module.exports = ACOS_PCEX_Example;
