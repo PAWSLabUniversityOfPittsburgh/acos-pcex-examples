@@ -9,5 +9,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/mhassany-pitt/acos-pcex-examples.git"
+  },
+  "dependencies": {
+    "download": "^8.0.0"
   }
 }

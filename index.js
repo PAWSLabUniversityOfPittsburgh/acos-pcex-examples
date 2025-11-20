@@ -1,5 +1,6 @@
 const https = require('https');
 var htmlencode = require('htmlencode').htmlEncode;
+const download = require('download');
 
 var ACOS_PCEX_Example = function () { };
 
@@ -41,12 +42,15 @@ const load = () => {
   // const api = 'http://adapt2.sis.pitt.edu/pcex-authoring/api/hub'
   const api = 'https://proxy.personalized-learning.org/pcex-authoring/api/hub'
   https.get(api, (response) => {
+    console.log('acos-pcex-examples: reloading acos-pcex-examples from API...');
+
     let raw = '';
     response.on('data', (chunk) => raw += chunk);
     response.on('end', () => {
       ACOS_PCEX_Example.meta.contents = {};
       ACOS_PCEX_Example.meta.teaserContent = [];
-      JSON.parse(raw).sort((a, b) => a.name.localeCompare(b.name)).forEach((example, index) => {
+      const items = JSON.parse(raw).sort((a, b) => a.name.localeCompare(b.name));
+      items.forEach((example, index) => {
         let name = example.name;
         name = name.replace(/ /g, '_');
         name = name.replace(/\./g, '_');
@@ -57,11 +61,17 @@ const load = () => {
         };
       });
       ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
+
+      // cache all examples locally
+      Promise.all(items.map(i => download(
+        `${api}/${i.id}?_t=${Date.now()}`,
+        './node_modules/acos-pcex-examples/static/data', { filename: `${i.id}.json` },
+      ).then((item) => console.log(`acos-pcex-examples: ${i.id}.json cached locally.`))));
     });
   }).on('error', (error) => console.error('Error:', error));
 }
 
-setInterval(() => load(), 5 * 60 * 1000); // reload every 5mins
+setInterval(() => load(), 10 * 60 * 1000); // reload every 5mins
 load();
 
 module.exports = ACOS_PCEX_Example;
