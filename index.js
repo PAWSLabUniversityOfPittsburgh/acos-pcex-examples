@@ -60,6 +60,7 @@ const load = () => {
           'description': example.description || '',
         };
       });
+      ACOS_PCEX_Example.meta.contents['preview'] = {}; // add empty content for default
       ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
 
       // cache all examples locally
