@@ -1,6 +1,7 @@
 const https = require('https');
 var htmlencode = require('htmlencode').htmlEncode;
 const download = require('download');
+const slugify = require('transliteration').slugify;
 
 var ACOS_PCEX_Example = function () { };
 
@@ -51,7 +52,7 @@ const load = () => {
       ACOS_PCEX_Example.meta.teaserContent = [];
       const items = JSON.parse(raw).sort((a, b) => a.name.localeCompare(b.name));
       items.forEach((example, index) => {
-        let name = example.name;
+        let name = slugify(example.name, { separator: '_' });
         name = name.replace(/ /g, '_');
         name = name.replace(/\./g, '_');
         ACOS_PCEX_Example.meta.contents[`${name}__${example.id}`] = {

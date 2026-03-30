@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "download": "^8.0.0",
-    "htmlencode": "^0.0.5"
+    "htmlencode": "^0.0.5",
+    "transliteration": "^2.6.1"
   }
 }
