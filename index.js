@@ -73,7 +73,7 @@ const load = () => {
   }).on('error', (error) => console.error('Error:', error));
 }
 
-setInterval(() => load(), 10 * 60 * 1000); // reload every 5mins
+setInterval(() => load(), /* reload every */ 10 /* mins */ * 60 * 1000);
 load();
 
 module.exports = ACOS_PCEX_Example;
