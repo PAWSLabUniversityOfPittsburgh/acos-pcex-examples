@@ -1,7 +1,10 @@
 const https = require('https');
+const path = require('path');
 var htmlencode = require('htmlencode').htmlEncode;
 const download = require('download');
 const slugify = require('transliteration').slugify;
+
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 var ACOS_PCEX_Example = function () { };
 
@@ -40,35 +43,48 @@ ACOS_PCEX_Example.meta = {
 };
 
 const load = () => {
-  // const api = 'http://adapt2.sis.pitt.edu/pcex-authoring/api/hub'
-  const api = 'https://proxy.personalized-learning.org/pcex-authoring/api/hub'
-  https.get(api, (response) => {
+  const api = process.env.PCEX_API_URL || 'https://adapt2.sis.pitt.edu/pcex-authoring/api/hub';
+  https.get(api, { agent: httpsAgent }, (response) => {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      console.error(`acos-pcex-examples: Failed to load from API (status code: ${response.statusCode})`);
+      response.resume();
+      return;
+    }
+
     console.log('acos-pcex-examples: reloading acos-pcex-examples from API...');
 
     let raw = '';
     response.on('data', (chunk) => raw += chunk);
     response.on('end', () => {
-      ACOS_PCEX_Example.meta.contents = {};
-      ACOS_PCEX_Example.meta.teaserContent = [];
-      const items = JSON.parse(raw).sort((a, b) => a.name.localeCompare(b.name));
-      items.forEach((example, index) => {
-        let name = slugify(example.name, { separator: '_' });
-        name = name.replace(/ /g, '_');
-        name = name.replace(/\./g, '_');
-        ACOS_PCEX_Example.meta.contents[`${name}__${example.id}`] = {
-          'order': index,
-          'title': example.name,
-          'description': example.description || '',
-        };
-      });
-      ACOS_PCEX_Example.meta.contents['preview'] = {}; // add empty content for default
-      ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
+      try {
+        const items = JSON.parse(raw).sort((a, b) => a.name.localeCompare(b.name));
+        ACOS_PCEX_Example.meta.contents = {};
+        ACOS_PCEX_Example.meta.teaserContent = [];
+        items.forEach((example, index) => {
+          let name = slugify(example.name, { separator: '_' });
+          name = name.replace(/ /g, '_');
+          name = name.replace(/\./g, '_');
+          ACOS_PCEX_Example.meta.contents[`${name}__${example.id}`] = {
+            'order': index,
+            'title': example.name,
+            'description': example.description || '',
+          };
+        });
+        ACOS_PCEX_Example.meta.contents['preview'] = {}; // add empty content for default
+        ACOS_PCEX_Example.meta.teaserContent = Object.keys(ACOS_PCEX_Example.meta.contents).slice(0, 4);
 
-      // cache all examples locally
-      Promise.all(items.map(i => download(
-        `${api}/${i.id}?_t=${Date.now()}`,
-        './node_modules/acos-pcex-examples/static/data', { filename: `${i.id}.json` },
-      ).then((item) => console.log(`acos-pcex-examples: ${i.id}.json cached locally.`))));
+        // cache all examples locally
+        const cacheDir = path.join(__dirname, 'static/data');
+        Promise.all(items.map(i => download(
+          `${api}/${i.id}?_t=${Date.now()}`,
+          cacheDir,
+          { filename: `${i.id}.json`, rejectUnauthorized: false }
+        ).then(() => console.log(`acos-pcex-examples: ${i.id}.json cached locally.`))
+         .catch((err) => console.error(`acos-pcex-examples: Failed to cache ${i.id}.json:`, err.message))
+        )).catch((err) => console.error('acos-pcex-examples: Error caching examples:', err));
+      } catch (err) {
+        console.error('acos-pcex-examples: Error parsing JSON response:', err);
+      }
     });
   }).on('error', (error) => console.error('Error:', error));
 }
